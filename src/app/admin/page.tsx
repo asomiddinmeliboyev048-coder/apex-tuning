@@ -1,32 +1,33 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { auth, db } from '@/lib/firebase'
-import { doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
+import { collection, getDocs, query, where } from 'firebase/firestore'
 import { useRouter } from 'next/navigation'
 import TopBar from '@/components/layout/TopBar'
 import BottomNav from '@/components/layout/BottomNav'
 import { Users, Package, Video, ShoppingBag } from 'lucide-react'
+import AdminGuard from '@/components/admin/AdminGuard'
 
-export default function AdminPage() {
+function AdminInner() {
   const router = useRouter()
   const [stats, setStats] = useState({ users: 0, orders: 0, pending: 0, products: 0 })
 
   useEffect(() => {
-    const check = async () => {
-      const u = auth.currentUser
-      if (!u) return router.push('/auth/login')
-      const snap = await getDoc(doc(db, 'users', u.uid))
-      if (snap.data()?.role !== 'admin') return router.push('/garage')
-      const [users, orders, pending, products] = await Promise.all([
-        getDocs(collection(db, 'users')),
-        getDocs(query(collection(db, 'orders'), where('status', '==', 'new'))),
-        getDocs(query(collection(db, 'posts'), where('status', '==', 'pending'))),
-        getDocs(collection(db, 'products')),
-      ])
-      setStats({ users: users.size, orders: orders.size, pending: pending.size, products: products.size })
+    const load = async () => {
+      try {
+        const [users, orders, pending, products] = await Promise.all([
+          getDocs(collection(db, 'users')),
+          getDocs(query(collection(db, 'orders'), where('status', '==', 'new'))),
+          getDocs(query(collection(db, 'posts'), where('status', '==', 'pending'))),
+          getDocs(collection(db, 'products')),
+        ])
+        setStats({ users: users.size, orders: orders.size, pending: pending.size, products: products.size })
+      } catch {
+        // collections may not exist yet
+      }
     }
-    check()
-  }, [router])
+    load()
+  }, [])
 
   const cards = [
     { icon: Users, label: 'Foydalanuvchilar', value: stats.users, path: '/admin/users' },
@@ -53,9 +54,11 @@ export default function AdminPage() {
 
         <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
           {[
+            { label: '🛒 Mahsulot qo\'shish / boshqarish', path: '/admin/products' },
             { label: '🚗 Mashinalar boshqarish', path: '/admin/cars' },
-            { label: '📹 Video moderatsiya', path: '/admin/videos' },
-            { label: '💬 Qo\'llab-quvvatlash', path: '/admin/support' },
+            { label: '📹 Video qo\'shish / moderatsiya', path: '/admin/videos' },
+            { label: '📦 Buyurtmalar', path: '/admin/orders' },
+            { label: '👥 Foydalanuvchilar', path: '/admin/users' },
           ].map(({ label, path }) => (
             <button key={path} onClick={() => router.push(path)} className="card" style={{
               padding: 16, border: 'none', cursor: 'pointer', textAlign: 'left',
@@ -67,4 +70,8 @@ export default function AdminPage() {
       <BottomNav />
     </div>
   )
+}
+
+export default function AdminPage() {
+  return <AdminGuard><AdminInner /></AdminGuard>
 }
