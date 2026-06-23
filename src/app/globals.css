@@ -72,3 +72,39 @@ input:focus, textarea:focus { border-color: var(--primary); }
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ============================================================
+   Three.js / WebGL canvas — mobil "static noise" glitch fix
+   ============================================================ */
+canvas {
+  max-width: 100%;
+  display: block;
+}
+
+/* 3D canvas konteyneri: o'z compositing qatlamida bo'lib, pastdagi
+   footer/BottomNav ustiga oqib ketmaydi */
+.r3f-canvas-wrap {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  z-index: 0;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+.r3f-canvas-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  touch-action: pan-y;
+}
+
+@media (max-width: 768px) {
+  canvas {
+    max-width: 100%;
+    display: block;
+  }
+  /* mobil'da WebGL qatlamini qat'iy chegaralash */
+  .r3f-canvas-wrap {
+    contain: layout paint;
+  }
+}

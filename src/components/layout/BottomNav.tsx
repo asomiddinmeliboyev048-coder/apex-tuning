@@ -20,7 +20,8 @@ export default function BottomNav() {
       position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
       width: '100%', maxWidth: 430, background: '#1a1a2e',
       borderTop: '1px solid #2a2a3e', display: 'flex',
-      zIndex: 100, paddingBottom: 'env(safe-area-inset-bottom)'
+      zIndex: 100, paddingBottom: 'env(safe-area-inset-bottom)',
+      isolation: 'isolate', willChange: 'transform', backfaceVisibility: 'hidden',
     }}>
       {tabs.map(({ icon: Icon, label, path }) => {
         const active = pathname.startsWith(path)

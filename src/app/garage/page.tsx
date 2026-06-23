@@ -39,7 +39,14 @@ function GarageModel({ url }: { url: string }) {
 
 function GarageScene({ carUrl, garageUrl, color }: { carUrl: string; garageUrl: string; color: string }) {
   return (
-    <Canvas camera={{ position: [3, 2, 5], fov: 50 }}>
+    <Canvas
+      camera={{ position: [3, 2, 5], fov: 50 }}
+      dpr={[1, 2]}
+      gl={{ antialias: true, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: false }}
+      style={{ width: '100%', height: '100%', display: 'block', touchAction: 'pan-y' }}
+    >
+      {/* Har kadrda solid rangga tozalanadi -> bo'sh GPU buferidan "static noise" chiqmaydi */}
+      <color attach="background" args={['#111111']} />
       <ambientLight intensity={0.5} />
       <directionalLight position={[10, 10, 5]} intensity={1} />
       <Suspense fallback={null}>
@@ -106,8 +113,20 @@ export default function GaragePage() {
         }
       />
 
-      {/* 3D Canvas */}
-      <div style={{ height: '50vh', background: '#111' }}>
+      {/* 3D Canvas — mobil WebGL glitch oldini olish uchun izolyatsiya qilingan konteyner */}
+      <div
+        className="r3f-canvas-wrap"
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '50vh',
+          overflow: 'hidden',
+          isolation: 'isolate',
+          zIndex: 0,
+          background: '#111',
+          contain: 'layout paint',
+        }}
+      >
         <GarageScene carUrl={carUrl} garageUrl={garageUrl} color={color} />
       </div>
 
